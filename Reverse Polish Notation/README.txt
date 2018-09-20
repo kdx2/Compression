@@ -1,1 +1,1 @@
-For now the program <b>DOES NOT</b> work. It is still under development.
+For now the program DOES NOT work. It is still under development.
