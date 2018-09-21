@@ -1,12 +1,13 @@
 import java.util.Scanner;
-import java.util.Stack<E>;
-import java.util.LinkedList<E>;
+import java.util.Stack;
+import java.util.LinkedList;
 
 
 public class RPN {
 
 	private static boolean resultIsOperand = true;
 	private static boolean resultPrecedence = true;
+	private static boolean resultRightAssociative = true;
 	
 	public RPN() {}
 
@@ -30,12 +31,12 @@ public class RPN {
 		return resultIsOperand;
 	}
 
-	public static int[2] getOperatorPrecedenceCode(String operator, String operatorStack) {
+	public static int[] getOperatorPrecedenceCode(String operator, String operatorStack) {
 		
 		// The 0th element - the operator we are about to add to the stack.
 		// The 1th element - the one we have fetched from the stack.
-		int[2] operators = [operator, operatorStack];
-		int[2] result;
+		int[] operators = {operator, operatorStack};
+		int result = new int[2];
 
 			for (int i=0; i<2; i++) 
 			{
@@ -58,13 +59,32 @@ public class RPN {
 		return result;
 	}
 
-	public static boolean hasLessThanOrEqualPrecedence(String operator, String operatorStack) {
+	public static boolean isRightAssociative(String operator) {
+		if (operator != "^")
+			resultRightAssociative = false;
+		else 
+			resultRightAssociative = true;
 
-		int operatorPrecedenceCode[2];
+		return resultRightAssociative;
+	}
+
+	public static boolean hasLessPrecedence(String operator, String operatorStack) {
+
+		int operatorPrecedenceCode = new int[2];
 
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
 
-		return operatorPrecedenceCode[0] <= operatorPrecedenceCode[1] ? true : false;
+		return operatorPrecedenceCode[0] < operatorPrecedenceCode[1] ? true : false;
+	}
+
+
+	public static boolean hasEqualPrecedence(String operator, String operatorStack) {
+
+		int operatorPrecedenceCode = new int[2];
+
+		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
+
+		return operatorPrecedenceCode[0] == operatorPrecedenceCode[1] ? true : false;
 	}
 
 	public static void main(String[] args) {
@@ -75,7 +95,7 @@ public class RPN {
 		String currentChar = null;
 		boolean hasPolynomial = false;
 
-		Stack<String> stack = new Stack<String>;
+		Stack<String> stack = new Stack<String>();
 		LinkedList<String> outputString = new LinkedList<String>();
 		
 		// The Shunting-yard algorithm. 
@@ -102,16 +122,45 @@ public class RPN {
 			{
 				while (
 						(!stack.empty() 
-						  && RPN.hasLessThanOrEqualPrecedence(currentChar, stack.peek())
-						)
+						 && RPN.hasLessPrecedence(currentChar, stack.peek()))
+						
 						|| 
-					  ) 
+						
+						(!stack.empty() 
+						 && RPN.hasEqualPrecedence(currentChar, stack.peek())
+						 && !RPN.isRightAssociative())
+
+						||
+
+						(!stack.empty()
+						 && stack.peek() != "(")) 
 				{
-
+					outputString.add(stack.pop());
 				}
-			}		
+				stack.push(currentChar);
+			}
 
+			if (currentChar == "(") {
+				stack.push(currentChar);
+			}
+			if (currentChar == ")") {
+				while (stack.peek() != "(") {
+					// Append all operators to the rpn string.
+					outputString.add(stack.pop());
+				}
+				stack.pop(); // Remove the "("
+			}
 		} while (input.hasNext());
+
+		// Check if there is something left in the stack, print it.
+		while (!stack.empty()) {
+			outputString.add(stack.pop());
+		}
+
+		System.out.print("RPN: ");
+		for (int i=0; i<outputString.size(); i++) {
+			System.out.print(outputString.get(i));
+		}
 
 		input.close();
 	}
