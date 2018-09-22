@@ -15,17 +15,17 @@ public class RPN {
 	public static boolean isOperand(String currentChar) {
 		
 		switch (currentChar) {
-			case '-':
-			case '+':
-			case '*':
-			case '/':
-			case '^':
-			case '(': 
-			case ')': 
-				isOperandResult = false; break;
+			case "-":
+			case "+":
+			case "*":
+			case "/":
+			case "^":
+			case "(": 
+			case ")": 
+				resultIsOperand = false; break;
 			default: {
 				// Not an operation, thus an operator. Add it to the output.
-				isOperand = true; break;	
+				resultIsOperand = true; break;	
 			}
 		}
 		return resultIsOperand;
@@ -35,8 +35,8 @@ public class RPN {
 		
 		// The 0th element - the operator we are about to add to the stack.
 		// The 1th element - the one we have fetched from the stack.
-		int[] operators = {operator, operatorStack};
-		int result = new int[2];
+		String[] operators = {operator, operatorStack};
+		int[] result = new int[2];
 
 			for (int i=0; i<2; i++) 
 			{
@@ -70,7 +70,7 @@ public class RPN {
 
 	public static boolean hasLessPrecedence(String operator, String operatorStack) {
 
-		int operatorPrecedenceCode = new int[2];
+		int[] operatorPrecedenceCode = new int[2];
 
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
 
@@ -80,7 +80,7 @@ public class RPN {
 
 	public static boolean hasEqualPrecedence(String operator, String operatorStack) {
 
-		int operatorPrecedenceCode = new int[2];
+		int[] operatorPrecedenceCode = new int[2];
 
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
 
@@ -128,7 +128,7 @@ public class RPN {
 						
 						(!stack.empty() 
 						 && RPN.hasEqualPrecedence(currentChar, stack.peek())
-						 && !RPN.isRightAssociative())
+						 && !RPN.isRightAssociative(currentChar))
 
 						||
 
