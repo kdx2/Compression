@@ -1,4 +1,6 @@
-import java.util.Scanner;
+import java.io.InputStreamReader;
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Stack;
 import java.util.LinkedList;
 
@@ -12,16 +14,16 @@ public class RPN {
 	public RPN() {}
 
 	// 3 + 1 = 4, 3 -> operand, '+' -> operator
-	public static boolean isOperand(String currentChar) {
+	public static boolean isOperand(Character currentChar) {
 		
 		switch (currentChar) {
-			case "-":
-			case "+":
-			case "*":
-			case "/":
-			case "^":
-			case "(": 
-			case ")": 
+			case '-':
+			case '+':
+			case '*':
+			case '/':
+			case '^':
+			case '(': 
+			case ')': 
 				resultIsOperand = false; break;
 			default: {
 				// Not an operation, thus an operator. Add it to the output.
@@ -31,36 +33,35 @@ public class RPN {
 		return resultIsOperand;
 	}
 
-	public static int[] getOperatorPrecedenceCode(String operator, String operatorStack) {
+	public static int[] getOperatorPrecedenceCode(Character operator, Character operatorStack) {
 		
 		// The 0th element - the operator we are about to add to the stack.
 		// The 1th element - the one we have fetched from the stack.
-		String[] operators = {operator, operatorStack};
+		Character[] operators = {operator, operatorStack};
 		int[] result = new int[2];
 
 			for (int i=0; i<2; i++) 
 			{
-				if (operators[i] == "+" || operators[i] == "-")
-					result[i] = 0;
-				else if (operators[i] == "*" || operators[i] == "/" || operators[i] == "%")
-					result[i] = 1;
-				else if (operators[i] == "^")
-					result[i] = 2;
-				else if (operators[i] == "(") // parenthesis
-					result[i] = 3;
-				else if (operators[i] == ")")
-					result[i] = 4;
-				else { // error
-					System.err.println("Exception in getOperatorPrecedenceCode(): "
-									   + "no such operator defined");
+				switch (operators[i])
+				{
+					case '+': case '-': result[i] = 0; break;
+					case '*': case '/':  case '%': result[i] = 1; break;
+					case '^': result[i] = 2; break; 
+					case '(': result[i] = 3; break;
+					case ')': result[i] = 4; break;
+					default: 
+						System.err.println("Exception in getOperatorPrecedenceCode(): "
+									   + "no such operator defined"); break;
 				}
 			}
 
 		return result;
 	}
 
-	public static boolean isRightAssociative(String operator) {
-		if (operator != "^")
+	public static boolean isRightAssociative(Character operator) {
+		System.out.println("Called isRightAssociative");
+
+		if (operator != '^')
 			resultRightAssociative = false;
 		else 
 			resultRightAssociative = true;
@@ -68,8 +69,8 @@ public class RPN {
 		return resultRightAssociative;
 	}
 
-	public static boolean hasLessPrecedence(String operator, String operatorStack) {
-
+	public static boolean hasLessPrecedence(Character operator, Character operatorStack) {
+		System.out.println("Called hasLessPrecedence");
 		int[] operatorPrecedenceCode = new int[2];
 
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
@@ -78,7 +79,8 @@ public class RPN {
 	}
 
 
-	public static boolean hasEqualPrecedence(String operator, String operatorStack) {
+	public static boolean hasEqualPrecedence(Character operator, Character operatorStack) {
+		System.out.println("Called hasEqualPrecedence");
 
 		int[] operatorPrecedenceCode = new int[2];
 
@@ -91,35 +93,46 @@ public class RPN {
 
 		System.out.println("Reverse Polish Notation Calculator\n\n");
 
-		Scanner input = new Scanner(System.in);
-		String currentChar = null;
-		boolean hasPolynomial = false;
+		BufferedReader input = new BufferedReader (new InputStreamReader(System.in));
+		String polynomial = null;
+		Character currentChar = null;
 
-		Stack<String> stack = new Stack<String>();
-		LinkedList<String> outputString = new LinkedList<String>();
+		Stack<Character> stack = new Stack<Character>();
+		LinkedList<Character> outputString = new LinkedList<Character>();
 		
 		// The Shunting-yard algorithm. 
 		// Converts infix notation to postfix (reverse polish) notation.
 		// Get the input polynomial symbow wise. Check for an empty string.
-		hasPolynomial = input.hasNext();
 
-		// Error handling - empty input.
-		if (!hasPolynomial)
-		{
-			System.err.println("Error: please provide a polynomial.");
-			input.close();
-			System.exit(-1);			
+		try {
+			polynomial = input.readLine();
+			if (polynomial == null) {
+				System.out.println("Error: no polynomial provided.");
+				System.exit(-1);
+			}
+		}
+		catch (Exception e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+		}
+		finally {
+			try {input.close();}
+			catch(IOException e) 
+				{System.err.println(e.getMessage());}
 		}
 
-		do {
-			currentChar = (String) input.next();
-			
+		for (int i=0; i<polynomial.length()-1; i++)
+		{
+			currentChar = polynomial.charAt(i);
+
+			System.out.println("do-while: currentChar = " + currentChar);
 			if (RPN.isOperand(currentChar)) 
 			{
+				System.out.println("check isOperand");
 				outputString.add(currentChar);
 			}
 			else  // It's an operator: '+', '-', '*'...
-			{
+			{	System.out.println("Is letter");
 				while (
 						(!stack.empty() 
 						 && RPN.hasLessPrecedence(currentChar, stack.peek()))
@@ -133,27 +146,30 @@ public class RPN {
 						||
 
 						(!stack.empty()
-						 && stack.peek() != "(")) 
+						 && stack.peek() != '(')) 
 				{
+					System.out.println("while. Adding " + stack.peek() + " to output...");
 					outputString.add(stack.pop());
 				}
 				stack.push(currentChar);
 			}
-
-			if (currentChar == "(") {
+			  System.out.println("Is letter 1");
+			if (currentChar == '(') {
 				stack.push(currentChar);
-			}
-			if (currentChar == ")") {
-				while (stack.peek() != "(") {
+			} System.out.println("Is letter 2");
+			if (currentChar == ')') {
+				while (stack.peek() != '(') { System.out.println("Is letter 2.5");
 					// Append all operators to the rpn string.
 					outputString.add(stack.pop());
+					// stack.pop(); // Remove the "("
 				}
-				stack.pop(); // Remove the "("
 			}
-		} while (input.hasNext());
+			System.out.println("Is letter 3");
+		}
 
 		// Check if there is something left in the stack, print it.
 		while (!stack.empty()) {
+			System.out.println("while empty stack");
 			outputString.add(stack.pop());
 		}
 
@@ -161,7 +177,6 @@ public class RPN {
 		for (int i=0; i<outputString.size(); i++) {
 			System.out.print(outputString.get(i));
 		}
-
-		input.close();
+		System.out.print("\n");
 	}
 }
