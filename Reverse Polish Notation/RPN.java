@@ -75,7 +75,6 @@ public class RPN {
 	}
 
 	public static boolean isRightAssociative(Character operator) {
-		System.out.println("Called isRightAssociative");
 
 		if (operator != '^')
 			resultRightAssociative = false;
@@ -86,8 +85,7 @@ public class RPN {
 	}
 
 	public static boolean hasLessPrecedence(Character operator, Character operatorStack) {
-		System.out.println("Called hasLessPrecedence");
-		System.out.println("Op1: " + operator + "; Op2: " + operatorStack);
+
 		int[] operatorPrecedenceCode = new int[2];
 
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
@@ -97,19 +95,27 @@ public class RPN {
 
 
 	public static boolean hasEqualPrecedence(Character operator, Character operatorStack) {
-		System.out.print("Called hasEqualPrecedence");
 
 		int[] operatorPrecedenceCode = new int[2];
-		boolean rez;
+
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
-		rez = operatorPrecedenceCode[0] == operatorPrecedenceCode[1] ? true : false;
-		System.out.println(" " + rez);
-		return rez;
+		
+		return operatorPrecedenceCode[0] == operatorPrecedenceCode[1] ? true : false;
 	}
 
 	public static void main(String[] args) {
 
 		System.out.println("Reverse Polish Notation Calculator\n\n");
+
+		System.out.println("The operators the program works with: ");
+		System.out.printf(" addition       --> %s\n",  "+");
+		System.out.printf(" subtraction    --> %s\n",  "-");
+		System.out.printf(" multiplication --> %s\n",  "*");
+		System.out.printf(" division       --> %s\n",  "/");
+		System.out.printf(" modulus        --> %s\n",  "%");
+		System.out.printf(" power          --> %s\n",  "^");
+
+		System.out.print("\n\n\n");
 
 		BufferedReader input = new BufferedReader (new InputStreamReader(System.in));
 		String polynomial = null;
@@ -143,17 +149,15 @@ public class RPN {
 		{
 			currentChar = polynomial.charAt(i);
 
-			System.out.println("\n\nNew character picked: " + currentChar);
 			if (currentChar.equals(' '))
 				// Skip
 				continue;
 			else if (RPN.isOperand(currentChar)) // operand -> coeficient, power
 			{
-				System.out.println("check isOperand");
 				outputString.add(currentChar);
 			}
 			else if (RPN.isOperator(currentChar)) // It's an operator: '+', '-', '*'...
-			{	System.out.println("Took operator" + currentChar.toString());
+			{
 				while (
 						!stack.empty()
 
@@ -167,13 +171,11 @@ public class RPN {
 						 	&& !RPN.isRightAssociative(currentChar)))
 					  ) 
 				{
-					System.out.println("Popped top of stack");
 					outputString.add(stack.pop());
 				}
 				stack.push(currentChar);
 			} // Look at the bracket cases.
 			else if (currentChar == '(') {
-				System.out.println("Pushed ( to stack");
 				stack.push(currentChar);
 			}
 			else if (currentChar == ')') {
@@ -187,12 +189,6 @@ public class RPN {
 				System.err.println("Unsupported character used.");
 				System.exit(-1);
 			}
-
-			System.out.print("RPN so far: ");
-			for (int x=0; x<outputString.size(); x++) {
-				System.out.print(outputString.get(x));
-		}
-		System.out.print("\n");
 		}
 
 		// Check if there is something left in the stack, print it.
@@ -200,7 +196,7 @@ public class RPN {
 			outputString.add(stack.pop());
 		}
 
-		System.out.print("RPN: ");
+		System.out.print("\nRPN: ");
 		for (int i=0; i<outputString.size(); i++) {
 			System.out.print(outputString.get(i));
 		}
