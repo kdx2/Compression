@@ -12,6 +12,12 @@ public class RPN {
 	private static boolean resultPrecedence = true;
 	private static boolean resultRightAssociative = true;
 	
+
+	private static int statsOriginalInputLength = 0;
+	private static int statsConvertedToRPNLength = 0;
+	private static int statsNumberCharactersSaved = 0;
+	private static double statsCompression = 0.0;
+
 	public RPN() {}
 
 	// 3 + 1 = 4, 3 -> operand, '+' -> operator
@@ -134,6 +140,8 @@ public class RPN {
 				System.out.println("Error: no polynomial provided.");
 				System.exit(-1);
 			}
+			// To measure the gained character savings in the end.
+			RPN.statsOriginalInputLength = polynomial.length();
 		}
 		catch (Exception e) {
 			System.out.println(e.getMessage());
@@ -199,7 +207,23 @@ public class RPN {
 		System.out.print("\nRPN: ");
 		for (int i=0; i<outputString.size(); i++) {
 			System.out.print(outputString.get(i));
+			if (outputString.get(i) == '(' || outputString.get(i) ==')') {
+				System.err.println("Mismatched brackets. \n >"
+								   + " Might be because of pasted input.");
+				System.exit(-1);
+			}
 		}
-		System.out.print("\n");
+		System.out.print("\n\n\n");
+		
+		RPN.statsConvertedToRPNLength = outputString.size();
+		RPN.statsNumberCharactersSaved = RPN.statsOriginalInputLength - RPN.statsConvertedToRPNLength;
+		RPN.statsCompression = ((double) RPN.statsConvertedToRPNLength / RPN.statsOriginalInputLength) * 100.0;
+		
+		System.out.println("========= Stats =========");
+		System.out.println("Original string length: " + RPN.statsOriginalInputLength);
+		System.out.println("RPN string length: " + RPN.statsConvertedToRPNLength);
+		System.out.println("Number characters* saved: " + RPN.statsNumberCharactersSaved);
+		System.out.printf("Compression: %.2f%% %n%n", RPN.statsCompression);
+		System.out.println("*chracters - removed opening and closed brackets and spaces.");
 	}
 }
