@@ -8,6 +8,7 @@ import java.util.LinkedList;
 public class RPN {
 
 	private static boolean resultIsOperand = true;
+	private static boolean resultIsOperator = false;
 	private static boolean resultPrecedence = true;
 	private static boolean resultRightAssociative = true;
 	
@@ -33,6 +34,22 @@ public class RPN {
 		return resultIsOperand;
 	}
 
+	public static boolean isOperator(Character currentChar) {
+
+		switch (currentChar) { // Isolate the brackets as separate case.
+			case '-':
+			case '+':
+			case '*':
+			case '/':
+			case '^':
+				resultIsOperator = true; break;
+			default:
+				resultIsOperator = false; break;
+		}
+
+		return resultIsOperator;
+	}
+
 	public static int[] getOperatorPrecedenceCode(Character operator, Character operatorStack) {
 		
 		// The 0th element - the operator we are about to add to the stack.
@@ -44,14 +61,13 @@ public class RPN {
 			{
 				switch (operators[i])
 				{
-					case '+': case '-': result[i] = 0; break;
-					case '*': case '/':  case '%': result[i] = 1; break;
-					case '^': result[i] = 2; break; 
-					case '(': result[i] = 3; break;
-					case ')': result[i] = 4; break;
+					case '(': result[i] = 0; break;
+					case '+': case '-': result[i] = 1; break;
+					case '*': case '/':  case '%': result[i] = 2; break;
+					case '^': result[i] = 3; break;
 					default: 
 						System.err.println("Exception in getOperatorPrecedenceCode(): "
-									   + "no such operator defined"); break;
+									   	   + "no such operator defined"); break;
 				}
 			}
 
@@ -71,6 +87,7 @@ public class RPN {
 
 	public static boolean hasLessPrecedence(Character operator, Character operatorStack) {
 		System.out.println("Called hasLessPrecedence");
+		System.out.println("Op1: " + operator + "; Op2: " + operatorStack);
 		int[] operatorPrecedenceCode = new int[2];
 
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
@@ -80,13 +97,14 @@ public class RPN {
 
 
 	public static boolean hasEqualPrecedence(Character operator, Character operatorStack) {
-		System.out.println("Called hasEqualPrecedence");
+		System.out.print("Called hasEqualPrecedence");
 
 		int[] operatorPrecedenceCode = new int[2];
-
+		boolean rez;
 		operatorPrecedenceCode = RPN.getOperatorPrecedenceCode(operator, operatorStack);
-
-		return operatorPrecedenceCode[0] == operatorPrecedenceCode[1] ? true : false;
+		rez = operatorPrecedenceCode[0] == operatorPrecedenceCode[1] ? true : false;
+		System.out.println(" " + rez);
+		return rez;
 	}
 
 	public static void main(String[] args) {
@@ -121,55 +139,64 @@ public class RPN {
 				{System.err.println(e.getMessage());}
 		}
 
-		for (int i=0; i<polynomial.length()-1; i++)
+		for (int i=0; i<polynomial.length(); i++)
 		{
 			currentChar = polynomial.charAt(i);
 
-			System.out.println("do-while: currentChar = " + currentChar);
-			if (RPN.isOperand(currentChar)) 
+			System.out.println("\n\nNew character picked: " + currentChar);
+			if (currentChar.equals(' '))
+				// Skip
+				continue;
+			else if (RPN.isOperand(currentChar)) // operand -> coeficient, power
 			{
 				System.out.println("check isOperand");
 				outputString.add(currentChar);
 			}
-			else  // It's an operator: '+', '-', '*'...
-			{	System.out.println("Is letter");
+			else if (RPN.isOperator(currentChar)) // It's an operator: '+', '-', '*'...
+			{	System.out.println("Took operator" + currentChar.toString());
 				while (
-						(!stack.empty() 
-						 && RPN.hasLessPrecedence(currentChar, stack.peek()))
-						
-						|| 
-						
-						(!stack.empty() 
-						 && RPN.hasEqualPrecedence(currentChar, stack.peek())
-						 && !RPN.isRightAssociative(currentChar))
+						!stack.empty()
 
-						||
+						&& 
 
-						(!stack.empty()
-						 && stack.peek() != '(')) 
+						( RPN.hasLessPrecedence(currentChar, stack.peek())
+						
+							|| 
+						
+							(RPN.hasEqualPrecedence(currentChar, stack.peek())
+						 	&& !RPN.isRightAssociative(currentChar)))
+					  ) 
 				{
-					System.out.println("while. Adding " + stack.peek() + " to output...");
+					System.out.println("Popped top of stack");
 					outputString.add(stack.pop());
 				}
 				stack.push(currentChar);
-			}
-			  System.out.println("Is letter 1");
-			if (currentChar == '(') {
+			} // Look at the bracket cases.
+			else if (currentChar == '(') {
+				System.out.println("Pushed ( to stack");
 				stack.push(currentChar);
-			} System.out.println("Is letter 2");
-			if (currentChar == ')') {
-				while (stack.peek() != '(') { System.out.println("Is letter 2.5");
+			}
+			else if (currentChar == ')') {
+				while (stack.peek() != '(') {
 					// Append all operators to the rpn string.
 					outputString.add(stack.pop());
-					// stack.pop(); // Remove the "("
 				}
+				stack.pop(); // Remove the opening bracket.
 			}
-			System.out.println("Is letter 3");
+			else {
+				System.err.println("Unsupported character used.");
+				System.exit(-1);
+			}
+
+			System.out.print("RPN so far: ");
+			for (int x=0; x<outputString.size(); x++) {
+				System.out.print(outputString.get(x));
+		}
+		System.out.print("\n");
 		}
 
 		// Check if there is something left in the stack, print it.
 		while (!stack.empty()) {
-			System.out.println("while empty stack");
 			outputString.add(stack.pop());
 		}
 
