@@ -26,6 +26,16 @@ In this project I have used the **Shunting-yard** algorithm for conversion betwe
 
 ### Example
 
+If we have the following polynomial:
+```
+3 + 4 × 2 ÷ ( 1 − 5 ) ^ 2 ^ 3 
+```
+it becomes:
+
+```
+3 4 × 2 ÷ 1 − 5 2 3 ^ ^ +
+```
+
 Let's look at this line of Lisp code:
 
 ```
@@ -49,4 +59,10 @@ As we can see further:
 | Number characters* saved | 18 |
 | Compression | **64.71%** |
 
-Of course, maybe the result of the compressed Lisp code may not be actually executable in the RPN from because the algorithm used to process it follows simply the mathematical dependencies of the precedences of the operations. If Lisp has some extra ones they have not been factored in. Apart, the concept that maybe code can be compressed this way is interesting.
+\*chracters - removed opening and closed brackets and spaces.
+
+
+The result of the compressed Lisp code may not be actually executable in the RPN from because the algorithm used to process it follows simply the mathematical dependencies of the precedences of the operations. If Lisp introduces others they have not been factored in. 
+Even so, the concept that maybe code can be compressed this way is interesting.
+
+Removing spaces on the other hand is a well known technique heavily used, for instance in *minification*. The most observable example are the Javascript libraries.
